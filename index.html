@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Presentie</title>
+<meta name="theme-color" content="#1E2A44">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Presentie">
+<script src="./xlsx.full.min.js" defer></script>
+<style>
+:root{
+  --ink:#14181F; --paper:#EFF1F4; --card:#fff; --muted:#79828F; --rule:#D7DCE3; --nav:#1E2A44;
+  --groen:#1B7F4B; --oranje:#D2611A; --rood:#B4232B; --leeg:#C6CDD6;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%;
+  overscroll-behavior-y:contain;
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid #3C6FE0;outline-offset:2px}
+
+.top{position:sticky;top:0;z-index:10;background:var(--nav);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 11px}
+.top-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.top-title{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.top-meta{font-size:12px;color:#B6C0D4}
+.bar{display:flex;height:11px;border-radius:6px;overflow:hidden;background:var(--leeg);margin-top:9px}
+.bar div{transition:width .18s ease}
+.counts{display:flex;gap:12px;margin-top:6px;font-size:12px;color:#B6C0D4;font-variant-numeric:tabular-nums}
+.counts span{display:inline-flex;align-items:center;gap:5px}
+.dot{width:9px;height:9px;border-radius:2px}
+
+.wrap{max-width:620px;margin:0 auto;padding:14px;padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:14px;margin-bottom:12px}
+.lesveld{width:100%;padding:12px;border:1px solid var(--rule);border-radius:8px;min-height:48px;margin-bottom:12px}
+
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--rule)}
+li:last-child{border-bottom:0}
+.naam{flex:1;min-width:0;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.knoppen{display:grid;grid-template-columns:repeat(3,54px);gap:5px;flex:0 0 auto}
+.k{min-height:46px;border:1.5px solid var(--rule);border-radius:8px;background:#fff;color:var(--muted);font-size:12px;font-weight:700;padding:0}
+.k[aria-pressed="true"]{color:#fff;border-color:transparent}
+.k.aanwezig[aria-pressed="true"]{background:var(--groen)}
+.k.telaat[aria-pressed="true"]{background:var(--oranje)}
+.k.afwezig[aria-pressed="true"]{background:var(--rood)}
+
+.acties{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--rule);
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;max-width:620px;margin:0 auto}
+.btn{flex:1;min-height:50px;border-radius:8px;border:1px solid var(--nav);background:var(--nav);color:#fff;font-weight:600;font-size:15px}
+.btn.ghost{background:#fff;color:var(--nav)}
+.btn:disabled{opacity:.45}
+
+.installbalk{display:none;align-items:center;gap:10px;background:var(--nav);color:#fff;
+  border-radius:10px;padding:11px 12px;margin-bottom:12px;font-size:14px}
+.installbalk button{min-height:40px;padding:0 14px;border-radius:8px;border:1px solid #fff;
+  background:#fff;color:var(--nav);font-weight:600;font-size:14px;flex:0 0 auto}
+summary{cursor:pointer;font-size:13px;color:var(--muted);font-weight:600}
+textarea{width:100%;min-height:180px;margin-top:10px;padding:11px;border:1px solid var(--rule);border-radius:8px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.55;resize:vertical}
+.mini{min-height:42px;padding:0 14px;border-radius:8px;border:1px solid var(--nav);background:var(--nav);color:#fff;font-weight:600;font-size:14px;margin-top:8px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));
+  background:var(--ink);color:#fff;padding:11px 16px;border-radius:8px;font-size:14px;z-index:40;box-shadow:0 6px 22px rgba(0,0,0,.3)}
+@media (max-width:350px){ .knoppen{grid-template-columns:repeat(3,48px)} }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-row">
+    <div class="top-title">Presentie</div>
+    <div class="top-meta" id="meta"></div>
+  </div>
+  <div class="bar" id="bar"></div>
+  <div class="counts" id="counts"></div>
+</header>
+
+<main class="wrap">
+  <div class="installbalk" id="installBalk">
+    <div style="flex:1">Zet Presentie op je beginscherm. Dan opent hij ook zonder verbinding.</div>
+    <button id="btnInstall">Installeren</button>
+  </div>
+
+  <div class="card">
+    <input class="lesveld" id="les" placeholder="Welke les? (optioneel)" autocomplete="off">
+    <ul id="lijst"></ul>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>Namen bewerken</summary>
+      <textarea id="namen" spellcheck="false"></textarea>
+      <button class="mini" id="btnNamen">Lijst vervangen</button>
+    </details>
+  </div>
+</main>
+
+<div class="acties">
+  <button class="btn ghost" id="btnReset">Wissen</button>
+  <button class="btn" id="btnExport">Exporteer naar Excel</button>
+</div>
+
+<script>
+"use strict";
+
+const STANDAARD = `Aalbers, Anouk
+Bakker, Bram
+Coenen, Cato
+Dekker, Daan
+Elzinga, Eva
+Fokkema, Fenna
+Geerts, Gijs
+Hoekstra, Hidde
+IJsselstein, Iris
+Jansen, Janna
+Jonker, Jesse
+Klaasma, Klaas
+Lubbers, Lieke
+Mulder, Mees
+Nieuwenhuis, Nora
+Oosterhuis, Olaf
+Puk, Piet
+Quist, Quinten
+Rietveld, Roos
+Sanders, Sanne
+Terpstra, Tim
+Veenstra, Vera
+Wiersma, Wout
+Ypma, Yara
+Zijlstra, Zoë`;
+
+const STATUS = [
+  { key:'aanwezig', kort:'Aanw.',   label:'Aanwezig', kleur:'var(--groen)'  },
+  { key:'telaat',   kort:'Te laat', label:'Te laat',  kleur:'var(--oranje)' },
+  { key:'afwezig',  kort:'Afw.',    label:'Afwezig',  kleur:'var(--rood)'   }
+];
+
+const bewaar = {
+  get(k,f){ try{ const v=localStorage.getItem(k); return v===null?f:JSON.parse(v);}catch(e){ return f; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
+
+let namen = bewaar.get('pres.namen', STANDAARD.split('\n'));
+let rijen = bewaar.get('pres.rijen', null) || namen.map(n=>({naam:n, status:null}));
+
+const $ = s => document.querySelector(s);
+const vandaag = () => new Date().toLocaleDateString('nl-NL');
+
+function opslaan(){ bewaar.set('pres.rijen', rijen); bewaar.set('pres.namen', namen); }
+
+function toast(t){
+  const e=document.createElement('div'); e.className='toast'; e.textContent=t;
+  e.setAttribute('role','status'); document.body.appendChild(e); setTimeout(()=>e.remove(),2400);
+}
+
+function tekenKop(){
+  const totaal = rijen.length;
+  $('#meta').textContent = vandaag();
+  const bar=$('#bar'), counts=$('#counts');
+  bar.innerHTML=''; counts.innerHTML='';
+  let gedaan=0;
+  STATUS.forEach(s=>{
+    const n = rijen.filter(r=>r.status===s.key).length;
+    gedaan += n;
+    if(n){
+      const d=document.createElement('div');
+      d.style.width=(n/totaal*100)+'%'; d.style.background=s.kleur;
+      bar.appendChild(d);
+    }
+    const c=document.createElement('span');
+    c.innerHTML=`<i class="dot" style="background:${s.kleur}"></i>${s.label} ${n}`;
+    counts.appendChild(c);
+  });
+  const rest=document.createElement('span');
+  rest.style.marginLeft='auto';
+  rest.textContent=`${gedaan}/${totaal}`;
+  counts.appendChild(rest);
+  $('#btnExport').disabled = gedaan===0;
+}
+
+function teken(){
+  const ul=$('#lijst'); ul.innerHTML='';
+  rijen.forEach(r=>{
+    const li=document.createElement('li');
+    const naam=document.createElement('div');
+    naam.className='naam'; naam.textContent=r.naam;
+    li.appendChild(naam);
+
+    const box=document.createElement('div'); box.className='knoppen';
+    STATUS.forEach(s=>{
+      const b=document.createElement('button');
+      b.className='k '+s.key; b.textContent=s.kort;
+      b.setAttribute('aria-pressed', String(r.status===s.key));
+      b.setAttribute('aria-label', `${r.naam}: ${s.label}`);
+      b.addEventListener('click',()=>{
+        r.status = (r.status===s.key) ? null : s.key;
+        try{ navigator.vibrate && navigator.vibrate(8); }catch(e){}
+        opslaan(); teken(); tekenKop();
+      });
+      box.appendChild(b);
+    });
+    li.appendChild(box);
+    ul.appendChild(li);
+  });
+  tekenKop();
+}
+
+/* ---------- namen bewerken ---------- */
+$('#namen').value = namen.join('\n');
+$('#btnNamen').addEventListener('click',()=>{
+  const nieuw = $('#namen').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  if(!nieuw.length){ toast('Geen namen gevonden.'); return; }
+  namen = nieuw;
+  rijen = namen.map(n=>({naam:n, status:null}));
+  opslaan(); teken();
+  toast(`${namen.length} namen geladen.`);
+});
+
+/* ---------- wissen ---------- */
+$('#btnReset').addEventListener('click',()=>{
+  if(!confirm('Alle statussen wissen?')) return;
+  rijen.forEach(r=>r.status=null);
+  opslaan(); teken();
+});
+
+/* ---------- export ---------- */
+function statusLabel(k){ const s=STATUS.find(x=>x.key===k); return s?s.label:'Niet geregistreerd'; }
+
+function csvBlob(){
+  const les = $('#les').value.trim();
+  const kop = ['Datum','Les','Naam','Status'];
+  const q = v => `"${String(v).replace(/"/g,'""')}"`;
+  const body = rijen.map(r=>[vandaag(), les, r.naam, statusLabel(r.status)]);
+  const tekst = '\uFEFF' + [kop,...body].map(r=>r.map(q).join(';')).join('\r\n');
+  return new Blob([tekst], {type:'text/csv;charset=utf-8'});
+}
+
+function bestandsnaam(ext){
+  const les = $('#les').value.trim().replace(/[^\w\s-]/g,'').replace(/\s+/g,'_');
+  const d = new Date().toISOString().slice(0,10);
+  return `presentie_${les?les+'_':''}${d}.${ext}`;
+}
+
+function bewaarBestand(blob, naam){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=naam;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },600);
+}
+
+$('#btnExport').addEventListener('click', ()=>{
+  const les=$('#les').value.trim();
+  try{
+    if(!window.XLSX) throw new Error('geen XLSX');
+    const data=[['Datum','Les','Naam','Status'],
+      ...rijen.map(r=>[vandaag(), les, r.naam, statusLabel(r.status)])];
+    const ws=XLSX.utils.aoa_to_sheet(data);
+    ws['!cols']=[{wch:12},{wch:24},{wch:26},{wch:18}];
+    ws['!autofilter']={ref:'A1:D'+data.length};
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Presentie');
+    const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+    bewaarBestand(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),
+                  bestandsnaam('xlsx'));
+    toast('Excelbestand opgeslagen.');
+  }catch(e){
+    bewaarBestand(csvBlob(), bestandsnaam('csv'));
+    toast('Opgeslagen als CSV. Opent ook in Excel.');
+  }
+});
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+
+let installEvent=null;
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault(); installEvent=e; $('#installBalk').style.display='flex';
+});
+$('#btnInstall').addEventListener('click', async ()=>{
+  if(!installEvent) return;
+  installEvent.prompt(); await installEvent.userChoice;
+  installEvent=null; $('#installBalk').style.display='none';
+});
+window.addEventListener('appinstalled',()=>{ $('#installBalk').style.display='none'; });
+
+teken();
+</script>
+</body>
+</html>
