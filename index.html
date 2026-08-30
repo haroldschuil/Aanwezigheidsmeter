@@ -131,6 +131,10 @@ select{width:100%;padding:11px;border:1px solid var(--rule);border-radius:8px;mi
           <option value=" ">spatie, dus Iris Jansen</option>
         </select>
 
+        <label style="display:flex;align-items:center;gap:10px;margin-top:10px;font-size:14px">
+          <input type="checkbox" id="omdraaien" style="width:20px;height:20px"> Volgorde omdraaien
+        </label>
+
         <div class="voorbeeld" id="voorbeeld"></div>
         <button class="mini" id="btnImport">Importeren</button>
         <button class="mini ghost" id="btnAnnuleer">Annuleren</button>
@@ -139,6 +143,11 @@ select{width:100%;padding:11px;border:1px solid var(--rule);border-radius:8px;mi
       <h3>Of namen plakken</h3>
       <textarea id="namen" spellcheck="false" placeholder="Eén naam per regel"></textarea>
       <button class="mini" id="btnNamen">Lijst vervangen</button>
+
+      <h3>Naamvolgorde</h3>
+      <p class="note" style="margin-top:0">Wisselt de huidige lijst tussen "Jansen, Janna" en
+      "Janna Jansen". De statussen blijven staan.</p>
+      <button class="mini ghost" id="btnDraai">Voor- en achternaam omdraaien</button>
     </details>
   </div>
 </main>
@@ -378,13 +387,15 @@ function bouwKolommen(){
 
 $('#kopregel').addEventListener('change', bouwKolommen);
 $('#scheiding').addEventListener('change', toonVoorbeeld);
+$('#omdraaien').addEventListener('change', toonVoorbeeld);
 
 function bouwNamen(){
   const start=$('#kopregel').checked?1:0;
   const sep=$('#scheiding').value;
+  const volgorde = $('#omdraaien').checked ? gekozen.slice().reverse() : gekozen;
   const uit=[];
   for(let r=start;r<tabel.length;r++){
-    const delen=gekozen.map(i=>(tabel[r][i]||'').trim()).filter(Boolean);
+    const delen=volgorde.map(i=>(tabel[r][i]||'').trim()).filter(Boolean);
     const naam=delen.join(sep).replace(/\s{2,}/g,' ').replace(/,\s*,/g,',').trim();
     if(naam) uit.push(naam);
   }
@@ -421,6 +432,32 @@ $('#btnImport').addEventListener('click',()=>{
 $('#btnAnnuleer').addEventListener('click',()=>{
   $('#importPaneel').style.display='none';
   $('#bestand').value=''; werkboek=null; tabel=[]; gekozen=[];
+});
+
+/* ---------------- voor- en achternaam wisselen ----------------
+   "Jansen, Janna"  ->  "Janna Jansen"
+   "Janna Jansen"   ->  "Jansen, Janna"   (eerste woord geldt als voornaam,
+                                           zodat "Van der Berg" heel blijft) */
+function draaiNaam(n){
+  const s=String(n).trim();
+  const komma=s.indexOf(',');
+  if(komma>-1){
+    const achter=s.slice(0,komma).trim();
+    const voor=s.slice(komma+1).trim();
+    return (voor && achter) ? `${voor} ${achter}` : s;
+  }
+  const delen=s.split(/\s+/);
+  if(delen.length<2) return s;
+  return `${delen.slice(1).join(' ')}, ${delen[0]}`;
+}
+
+$('#btnDraai').addEventListener('click',()=>{
+  if(!rijen.length) return;
+  rijen.forEach(r=>{ r.naam=draaiNaam(r.naam); });
+  namen=rijen.map(r=>r.naam);
+  opslaan(); teken();
+  $('#namen').value=namen.join('\n');
+  toast('Namen omgedraaid.');
 });
 
 /* ---------------- wissen ---------------- */

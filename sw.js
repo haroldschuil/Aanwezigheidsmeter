@@ -1,6 +1,6 @@
 /* Zet de hele app in de cache, zodat hij zonder netwerk opent.
    VERHOOG VERSIE na elke wijziging, anders blijft de oude versie staan. */
-const VERSIE = 'presentie-v2';
+const VERSIE = 'presentie-v3';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './xlsx.full.min.js',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'
