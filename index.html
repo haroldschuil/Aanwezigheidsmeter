@@ -20,30 +20,29 @@
 body{
   margin:0;background:var(--paper);color:var(--ink);
   font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-  font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%;
-  overscroll-behavior-y:contain;
+  font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%;overscroll-behavior-y:contain;
 }
-button,input{font:inherit;color:inherit}
+button,input,select{font:inherit;color:inherit}
 button{cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 :focus-visible{outline:3px solid #3C6FE0;outline-offset:2px}
 
 .top{position:sticky;top:0;z-index:10;background:var(--nav);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 11px}
 .top-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .top-title{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
-.top-meta{font-size:12px;color:#B6C0D4}
+.top-meta{font-size:12px;color:#B6C0D4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar{display:flex;height:11px;border-radius:6px;overflow:hidden;background:var(--leeg);margin-top:9px}
 .bar div{transition:width .18s ease}
 .counts{display:flex;gap:12px;margin-top:6px;font-size:12px;color:#B6C0D4;font-variant-numeric:tabular-nums}
 .counts span{display:inline-flex;align-items:center;gap:5px}
 .dot{width:9px;height:9px;border-radius:2px}
 
-.wrap{max-width:620px;margin:0 auto;padding:14px;padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+.wrap{max-width:620px;margin:0 auto;padding:14px;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 .card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:14px;margin-bottom:12px}
 .lesveld{width:100%;padding:12px;border:1px solid var(--rule);border-radius:8px;min-height:48px;margin-bottom:12px}
 
-ul{list-style:none;margin:0;padding:0}
-li{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--rule)}
-li:last-child{border-bottom:0}
+ul.lijst{list-style:none;margin:0;padding:0}
+ul.lijst li{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--rule)}
+ul.lijst li:last-child{border-bottom:0}
 .naam{flex:1;min-width:0;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .knoppen{display:grid;grid-template-columns:repeat(3,54px);gap:5px;flex:0 0 auto}
 .k{min-height:46px;border:1.5px solid var(--rule);border-radius:8px;background:#fff;color:var(--muted);font-size:12px;font-weight:700;padding:0}
@@ -58,16 +57,28 @@ li:last-child{border-bottom:0}
 .btn.ghost{background:#fff;color:var(--nav)}
 .btn:disabled{opacity:.45}
 
-.installbalk{display:none;align-items:center;gap:10px;background:var(--nav);color:#fff;
-  border-radius:10px;padding:11px 12px;margin-bottom:12px;font-size:14px}
-.installbalk button{min-height:40px;padding:0 14px;border-radius:8px;border:1px solid #fff;
-  background:#fff;color:var(--nav);font-weight:600;font-size:14px;flex:0 0 auto}
-summary{cursor:pointer;font-size:13px;color:var(--muted);font-weight:600}
-textarea{width:100%;min-height:180px;margin-top:10px;padding:11px;border:1px solid var(--rule);border-radius:8px;
+summary{cursor:pointer;font-size:14px;font-weight:600;padding:4px 0}
+h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+textarea{width:100%;min-height:170px;margin-top:8px;padding:11px;border:1px solid var(--rule);border-radius:8px;
   font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.55;resize:vertical}
-.mini{min-height:42px;padding:0 14px;border-radius:8px;border:1px solid var(--nav);background:var(--nav);color:#fff;font-weight:600;font-size:14px;margin-top:8px}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));
-  background:var(--ink);color:#fff;padding:11px 16px;border-radius:8px;font-size:14px;z-index:40;box-shadow:0 6px 22px rgba(0,0,0,.3)}
+.mini{min-height:44px;padding:0 15px;border-radius:8px;border:1px solid var(--nav);background:var(--nav);color:#fff;font-weight:600;font-size:14px;margin-top:8px}
+.mini.ghost{background:#fff;color:var(--nav)}
+.mini:disabled{opacity:.45}
+select{width:100%;padding:11px;border:1px solid var(--rule);border-radius:8px;min-height:46px;background:#fff}
+.note{font-size:13px;color:var(--muted);margin:8px 0 0}
+
+.kolommen{display:flex;flex-direction:column;gap:3px;margin-top:6px}
+.kolom{display:flex;align-items:center;gap:10px;padding:9px 8px;border:1px solid var(--rule);border-radius:8px;cursor:pointer}
+.kolom input{width:20px;height:20px;flex:0 0 auto}
+.kolom b{font-size:14px;display:block}
+.kolom small{font-size:12px;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.voorbeeld{background:var(--paper);border-radius:8px;padding:10px 12px;margin-top:12px;font-size:14px}
+.voorbeeld b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+
+.installbalk{display:none;align-items:center;gap:10px;background:var(--nav);color:#fff;border-radius:10px;padding:11px 12px;margin-bottom:12px;font-size:14px}
+.installbalk button{min-height:40px;padding:0 14px;border-radius:8px;border:1px solid #fff;background:#fff;color:var(--nav);font-weight:600;font-size:14px;flex:0 0 auto}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom));
+  background:var(--ink);color:#fff;padding:11px 16px;border-radius:8px;font-size:14px;z-index:40;max-width:90vw;box-shadow:0 6px 22px rgba(0,0,0,.3)}
 @media (max-width:350px){ .knoppen{grid-template-columns:repeat(3,48px)} }
 </style>
 </head>
@@ -90,13 +101,43 @@ textarea{width:100%;min-height:180px;margin-top:10px;padding:11px;border:1px sol
 
   <div class="card">
     <input class="lesveld" id="les" placeholder="Welke les? (optioneel)" autocomplete="off">
-    <ul id="lijst"></ul>
+    <ul class="lijst" id="lijst"></ul>
   </div>
 
   <div class="card">
-    <details>
-      <summary>Namen bewerken</summary>
-      <textarea id="namen" spellcheck="false"></textarea>
+    <details id="klasBlok">
+      <summary>Klas instellen</summary>
+
+      <h3>Importeren uit Excel</h3>
+      <input type="file" id="bestand" accept=".xlsx,.xls,.xlsm,.csv,.tsv,.txt" style="width:100%">
+      <p class="note">Werkt met xlsx, xls en csv. Je kiest daarna zelf welke kolommen de naam vormen.</p>
+
+      <div id="importPaneel" style="display:none">
+        <div id="bladKeuze" style="display:none">
+          <h3>Werkblad</h3>
+          <select id="blad"></select>
+        </div>
+
+        <h3>Welke kolommen vormen de naam?</h3>
+        <div class="kolommen" id="kolommen"></div>
+
+        <label style="display:flex;align-items:center;gap:10px;margin-top:10px;font-size:14px">
+          <input type="checkbox" id="kopregel" style="width:20px;height:20px"> Eerste rij is een kopregel
+        </label>
+
+        <h3>Samenvoegen met</h3>
+        <select id="scheiding">
+          <option value=", ">komma, dus Jansen, Iris</option>
+          <option value=" ">spatie, dus Iris Jansen</option>
+        </select>
+
+        <div class="voorbeeld" id="voorbeeld"></div>
+        <button class="mini" id="btnImport">Importeren</button>
+        <button class="mini ghost" id="btnAnnuleer">Annuleren</button>
+      </div>
+
+      <h3>Of namen plakken</h3>
+      <textarea id="namen" spellcheck="false" placeholder="Eén naam per regel"></textarea>
       <button class="mini" id="btnNamen">Lijst vervangen</button>
     </details>
   </div>
@@ -152,35 +193,30 @@ let rijen = bewaar.get('pres.rijen', null) || namen.map(n=>({naam:n, status:null
 
 const $ = s => document.querySelector(s);
 const vandaag = () => new Date().toLocaleDateString('nl-NL');
-
-function opslaan(){ bewaar.set('pres.rijen', rijen); bewaar.set('pres.namen', namen); }
+const opslaan = () => { bewaar.set('pres.rijen', rijen); bewaar.set('pres.namen', namen); };
 
 function toast(t){
   const e=document.createElement('div'); e.className='toast'; e.textContent=t;
-  e.setAttribute('role','status'); document.body.appendChild(e); setTimeout(()=>e.remove(),2400);
+  e.setAttribute('role','status'); document.body.appendChild(e); setTimeout(()=>e.remove(),2800);
 }
 
+/* ---------------- lijst tekenen ---------------- */
 function tekenKop(){
-  const totaal = rijen.length;
-  $('#meta').textContent = vandaag();
+  const totaal=rijen.length;
+  $('#meta').textContent = `${vandaag()} \u00b7 ${totaal} studenten`;
   const bar=$('#bar'), counts=$('#counts');
   bar.innerHTML=''; counts.innerHTML='';
   let gedaan=0;
   STATUS.forEach(s=>{
-    const n = rijen.filter(r=>r.status===s.key).length;
-    gedaan += n;
-    if(n){
-      const d=document.createElement('div');
-      d.style.width=(n/totaal*100)+'%'; d.style.background=s.kleur;
-      bar.appendChild(d);
-    }
+    const n=rijen.filter(r=>r.status===s.key).length;
+    gedaan+=n;
+    if(n && totaal){ const d=document.createElement('div'); d.style.width=(n/totaal*100)+'%'; d.style.background=s.kleur; bar.appendChild(d); }
     const c=document.createElement('span');
     c.innerHTML=`<i class="dot" style="background:${s.kleur}"></i>${s.label} ${n}`;
     counts.appendChild(c);
   });
   const rest=document.createElement('span');
-  rest.style.marginLeft='auto';
-  rest.textContent=`${gedaan}/${totaal}`;
+  rest.style.marginLeft='auto'; rest.textContent=`${gedaan}/${totaal}`;
   counts.appendChild(rest);
   $('#btnExport').disabled = gedaan===0;
 }
@@ -192,7 +228,6 @@ function teken(){
     const naam=document.createElement('div');
     naam.className='naam'; naam.textContent=r.naam;
     li.appendChild(naam);
-
     const box=document.createElement('div'); box.className='knoppen';
     STATUS.forEach(s=>{
       const b=document.createElement('button');
@@ -202,65 +237,226 @@ function teken(){
       b.addEventListener('click',()=>{
         r.status = (r.status===s.key) ? null : s.key;
         try{ navigator.vibrate && navigator.vibrate(8); }catch(e){}
-        opslaan(); teken(); tekenKop();
+        opslaan(); teken();
       });
       box.appendChild(b);
     });
-    li.appendChild(box);
-    ul.appendChild(li);
+    li.appendChild(box); ul.appendChild(li);
   });
   tekenKop();
 }
 
-/* ---------- namen bewerken ---------- */
-$('#namen').value = namen.join('\n');
-$('#btnNamen').addEventListener('click',()=>{
-  const nieuw = $('#namen').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  if(!nieuw.length){ toast('Geen namen gevonden.'); return; }
-  namen = nieuw;
+function zetNamen(lijst, bron){
+  namen = lijst;
   rijen = namen.map(n=>({naam:n, status:null}));
   opslaan(); teken();
-  toast(`${namen.length} namen geladen.`);
+  $('#namen').value = namen.join('\n');
+  $('#klasBlok').open = false;
+  toast(`${namen.length} namen geladen${bron?' uit '+bron:''}.`);
+}
+
+/* ---------------- namen plakken ---------------- */
+$('#namen').value = namen.join('\n');
+$('#btnNamen').addEventListener('click',()=>{
+  const nieuw=$('#namen').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  if(!nieuw.length){ toast('Geen namen gevonden.'); return; }
+  zetNamen(nieuw);
 });
 
-/* ---------- wissen ---------- */
+/* ============================================================
+   IMPORTEREN UIT EXCEL
+   ============================================================ */
+let werkboek=null, tabel=[], gekozen=[];
+
+const KOLOMLETTER = i => {
+  let s=''; i++;
+  while(i>0){ const r=(i-1)%26; s=String.fromCharCode(65+r)+s; i=Math.floor((i-1)/26); }
+  return s;
+};
+/* Is de eerste rij een kopregel of gewoon de eerste student?
+   Kale namenlijsten hebben geen kop, en dan mag rij 1 niet verdwijnen. */
+const KOPWOORDEN = /^(naam|namen|achternaam|voornaam|voorletters?|roepnaam|tussenvoegsels?|voorvoegsels?|student|studenten|studentnummer|nummer|nr|klas|groep|e-?mail|mailadres|opleiding|cursus|status|deelnemer)$/i;
+const vorm = c => (/,/.test(c)?'k':'') + (/\s/.test(c)?'s':'') + (/^[\d.,\s/-]+$/.test(c)?'n':'');
+
+function lijktKopregel(tab){
+  const rij=(tab[0]||[]).filter(Boolean);
+  if(!rij.length) return false;
+  if(rij.some(c=>KOPWOORDEN.test(c.trim()))) return true;   // duidelijke kolomtitel
+  if(rij.some(c=>/,/.test(c)))               return false;  // "Bakker, Bram" is geen titel
+  if(rij.some(c=>/^[\d.,\s/-]+$/.test(c)))   return false;  // een getal is geen titel
+  // Heeft rij 1 dezelfde vorm als de rest? Dan is het data.
+  const rest=tab.slice(1,21);
+  if(rest.length){
+    const zelfde = rest.filter(r => vorm(String(r[0]||'')) === vorm(String(tab[0][0]||''))).length;
+    if(zelfde / rest.length > 0.7) return false;
+  }
+  return true;
+}
+
+$('#bestand').addEventListener('change', async e=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  if(!window.XLSX){ toast('De Excel-module is nog niet geladen. Probeer het zo nog eens.'); return; }
+  try{
+    const buf = await f.arrayBuffer();
+    werkboek = XLSX.read(buf, {type:'array', raw:false});
+    if(!werkboek.SheetNames.length) throw new Error('leeg');
+    const sel=$('#blad'); sel.innerHTML='';
+    werkboek.SheetNames.forEach((n,i)=>{
+      const o=document.createElement('option'); o.value=String(i); o.textContent=n; sel.appendChild(o);
+    });
+    $('#bladKeuze').style.display = werkboek.SheetNames.length>1 ? 'block' : 'none';
+    sel.value='0';
+    leesBlad();
+    $('#importPaneel').style.display='block';
+  }catch(err){
+    toast('Dit bestand kan ik niet lezen.');
+    $('#importPaneel').style.display='none';
+  }
+});
+
+$('#blad').addEventListener('change', leesBlad);
+
+function leesBlad(){
+  const naam = werkboek.SheetNames[Number($('#blad').value)||0];
+  const ws = werkboek.Sheets[naam];
+  tabel = XLSX.utils.sheet_to_json(ws,{header:1, blankrows:false, defval:''})
+    .map(r => r.map(c => String(c==null?'':c).trim()))
+    .filter(r => r.some(c => c!==''));
+  if(!tabel.length){ toast('Dit werkblad is leeg.'); $('#importPaneel').style.display='none'; return; }
+  $("#kopregel").checked = lijktKopregel(tabel);
+  bouwKolommen();
+}
+
+function bouwKolommen(){
+  const kop=$('#kopregel').checked;
+  const breedte=Math.max(...tabel.map(r=>r.length));
+  const labels=[];
+  for(let i=0;i<breedte;i++){
+    labels.push((kop && tabel[0][i]) ? tabel[0][i] : `Kolom ${KOLOMLETTER(i)}`);
+  }
+
+  const naamAchtig=/naam|name|achternaam|voornaam|voorletter|roepnaam|tussenvoegsel|voorvoegsel/i;
+  const nummerAchtig=/nummer|number|\bnr\b|\bid\b|code|klas|groep|email|mail|datum/i;
+  gekozen=[];
+  if(kop){
+    labels.forEach((l,i)=>{ if(naamAchtig.test(l) && !nummerAchtig.test(l)) gekozen.push(i); });
+  }
+  if(!gekozen.length){
+    const start=kop?1:0;
+    let beste=0, score=-1;
+    for(let i=0;i<breedte;i++){
+      let s=0;
+      for(let r=start;r<tabel.length;r++){
+        const v=(tabel[r][i]||'').trim();
+        if(v && !/^[\d.,\s/-]+$/.test(v)) s++;
+      }
+      if(s>score){ score=s; beste=i; }
+    }
+    gekozen=[beste];
+  }
+
+  const box=$('#kolommen'); box.innerHTML='';
+  const start=kop?1:0;
+  labels.forEach((l,i)=>{
+    const voorbeelden=tabel.slice(start,start+3).map(r=>r[i]||'').filter(Boolean).join(' \u00b7 ');
+    const lab=document.createElement('label'); lab.className='kolom';
+    const cb=document.createElement('input');
+    cb.type='checkbox'; cb.checked=gekozen.includes(i); cb.dataset.i=String(i);
+    cb.addEventListener('change',()=>{
+      gekozen=Array.from(box.querySelectorAll('input:checked')).map(x=>Number(x.dataset.i)).sort((a,b)=>a-b);
+      toonVoorbeeld();
+    });
+    const txt=document.createElement('div'); txt.style.minWidth='0';
+    const b=document.createElement('b'); b.textContent=l;
+    const sm=document.createElement('small'); sm.textContent=voorbeelden||'leeg';
+    txt.appendChild(b); txt.appendChild(sm);
+    lab.appendChild(cb); lab.appendChild(txt); box.appendChild(lab);
+  });
+  toonVoorbeeld();
+}
+
+$('#kopregel').addEventListener('change', bouwKolommen);
+$('#scheiding').addEventListener('change', toonVoorbeeld);
+
+function bouwNamen(){
+  const start=$('#kopregel').checked?1:0;
+  const sep=$('#scheiding').value;
+  const uit=[];
+  for(let r=start;r<tabel.length;r++){
+    const delen=gekozen.map(i=>(tabel[r][i]||'').trim()).filter(Boolean);
+    const naam=delen.join(sep).replace(/\s{2,}/g,' ').replace(/,\s*,/g,',').trim();
+    if(naam) uit.push(naam);
+  }
+  return uit;
+}
+
+function toonVoorbeeld(){
+  const v=$('#voorbeeld');
+  v.innerHTML='';
+  const kop=document.createElement('b'); kop.textContent='Voorbeeld'; v.appendChild(kop);
+  const p=document.createElement('div'); p.style.whiteSpace='pre-line'; v.appendChild(p);
+
+  if(!gekozen.length){
+    p.textContent='Kies minstens één kolom.';
+    $('#btnImport').disabled=true; $('#btnImport').textContent='Importeren'; return;
+  }
+  const lijst=bouwNamen();
+  $('#btnImport').disabled = lijst.length===0;
+  if(!lijst.length){
+    p.textContent='Geen namen gevonden in deze kolommen.';
+    $('#btnImport').textContent='Importeren'; return;
+  }
+  p.textContent=`${lijst.slice(0,3).join('\n')}${lijst.length>3?'\n\u2026':''}\n\n${lijst.length} namen`;
+  $('#btnImport').textContent=`Importeer ${lijst.length} namen`;
+}
+
+$('#btnImport').addEventListener('click',()=>{
+  const lijst=bouwNamen();
+  if(!lijst.length){ toast('Geen namen gevonden.'); return; }
+  zetNamen(lijst,'Excel');
+  $('#importPaneel').style.display='none';
+  $('#bestand').value='';
+});
+$('#btnAnnuleer').addEventListener('click',()=>{
+  $('#importPaneel').style.display='none';
+  $('#bestand').value=''; werkboek=null; tabel=[]; gekozen=[];
+});
+
+/* ---------------- wissen ---------------- */
 $('#btnReset').addEventListener('click',()=>{
   if(!confirm('Alle statussen wissen?')) return;
   rijen.forEach(r=>r.status=null);
   opslaan(); teken();
 });
 
-/* ---------- export ---------- */
-function statusLabel(k){ const s=STATUS.find(x=>x.key===k); return s?s.label:'Niet geregistreerd'; }
-
-function csvBlob(){
-  const les = $('#les').value.trim();
-  const kop = ['Datum','Les','Naam','Status'];
-  const q = v => `"${String(v).replace(/"/g,'""')}"`;
-  const body = rijen.map(r=>[vandaag(), les, r.naam, statusLabel(r.status)]);
-  const tekst = '\uFEFF' + [kop,...body].map(r=>r.map(q).join(';')).join('\r\n');
-  return new Blob([tekst], {type:'text/csv;charset=utf-8'});
-}
+/* ---------------- exporteren ---------------- */
+const statusLabel = k => { const s=STATUS.find(x=>x.key===k); return s?s.label:'Niet geregistreerd'; };
 
 function bestandsnaam(ext){
-  const les = $('#les').value.trim().replace(/[^\w\s-]/g,'').replace(/\s+/g,'_');
-  const d = new Date().toISOString().slice(0,10);
-  return `presentie_${les?les+'_':''}${d}.${ext}`;
+  const les=$('#les').value.trim().replace(/[^\w\s-]/g,'').replace(/\s+/g,'_');
+  return `presentie_${les?les+'_':''}${new Date().toISOString().slice(0,10)}.${ext}`;
 }
-
-function bewaarBestand(blob, naam){
+function bewaarBestand(blob,naam){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob); a.download=naam;
   document.body.appendChild(a); a.click();
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },600);
 }
-
-$('#btnExport').addEventListener('click', ()=>{
+function tabelData(){
   const les=$('#les').value.trim();
+  return [['Datum','Les','Naam','Status'],
+    ...rijen.map(r=>[vandaag(), les, r.naam, statusLabel(r.status)])];
+}
+function csvBlob(){
+  const q=v=>`"${String(v).replace(/"/g,'""')}"`;
+  return new Blob(['\uFEFF'+tabelData().map(r=>r.map(q).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8'});
+}
+
+$('#btnExport').addEventListener('click',()=>{
   try{
     if(!window.XLSX) throw new Error('geen XLSX');
-    const data=[['Datum','Les','Naam','Status'],
-      ...rijen.map(r=>[vandaag(), les, r.naam, statusLabel(r.status)])];
+    const data=tabelData();
     const ws=XLSX.utils.aoa_to_sheet(data);
     ws['!cols']=[{wch:12},{wch:24},{wch:26},{wch:18}];
     ws['!autofilter']={ref:'A1:D'+data.length};
@@ -276,10 +472,10 @@ $('#btnExport').addEventListener('click', ()=>{
   }
 });
 
+/* ---------------- app installeren ---------------- */
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
-
 let installEvent=null;
 window.addEventListener('beforeinstallprompt', e=>{
   e.preventDefault(); installEvent=e; $('#installBalk').style.display='flex';
