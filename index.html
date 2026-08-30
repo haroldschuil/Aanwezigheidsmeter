@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Presentie</title>
+<title>De Aanwezigheidsmelder</title>
 <meta name="theme-color" content="#1E2A44">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Presentie">
+<meta name="apple-mobile-web-app-title" content="Aanwezigheid">
 <script src="./xlsx.full.min.js" defer></script>
 <style>
 :root{
@@ -28,8 +28,8 @@ button{cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-se
 
 .top{position:sticky;top:0;z-index:10;background:var(--nav);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 11px}
 .top-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-.top-title{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
-.top-meta{font-size:12px;color:#B6C0D4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top-title{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top-meta{font-size:12px;color:#B6C0D4;flex:0 0 auto;white-space:nowrap}
 .bar{display:flex;height:11px;border-radius:6px;overflow:hidden;background:var(--leeg);margin-top:9px}
 .bar div{transition:width .18s ease}
 .counts{display:flex;gap:12px;margin-top:6px;font-size:12px;color:#B6C0D4;font-variant-numeric:tabular-nums}
@@ -86,7 +86,7 @@ select{width:100%;padding:11px;border:1px solid var(--rule);border-radius:8px;mi
 
 <header class="top">
   <div class="top-row">
-    <div class="top-title">Presentie</div>
+    <div class="top-title">Aanwezigheidsmelder</div>
     <div class="top-meta" id="meta"></div>
   </div>
   <div class="bar" id="bar"></div>
@@ -95,7 +95,7 @@ select{width:100%;padding:11px;border:1px solid var(--rule);border-radius:8px;mi
 
 <main class="wrap">
   <div class="installbalk" id="installBalk">
-    <div style="flex:1">Zet Presentie op je beginscherm. Dan opent hij ook zonder verbinding.</div>
+    <div style="flex:1">Zet de Aanwezigheidsmelder op je beginscherm. Dan opent hij ook zonder verbinding.</div>
     <button id="btnInstall">Installeren</button>
   </div>
 
@@ -212,7 +212,7 @@ function toast(t){
 /* ---------------- lijst tekenen ---------------- */
 function tekenKop(){
   const totaal=rijen.length;
-  $('#meta').textContent = `${vandaag()} \u00b7 ${totaal} studenten`;
+  $('#meta').textContent = vandaag();
   const bar=$('#bar'), counts=$('#counts');
   bar.innerHTML=''; counts.innerHTML='';
   let gedaan=0;
@@ -472,7 +472,7 @@ const statusLabel = k => { const s=STATUS.find(x=>x.key===k); return s?s.label:'
 
 function bestandsnaam(ext){
   const les=$('#les').value.trim().replace(/[^\w\s-]/g,'').replace(/\s+/g,'_');
-  return `presentie_${les?les+'_':''}${new Date().toISOString().slice(0,10)}.${ext}`;
+  return `aanwezigheid_${les?les+'_':''}${new Date().toISOString().slice(0,10)}.${ext}`;
 }
 function bewaarBestand(blob,naam){
   const a=document.createElement('a');
@@ -498,7 +498,7 @@ $('#btnExport').addEventListener('click',()=>{
     ws['!cols']=[{wch:12},{wch:24},{wch:26},{wch:18}];
     ws['!autofilter']={ref:'A1:D'+data.length};
     const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Presentie');
+    XLSX.utils.book_append_sheet(wb, ws, 'Aanwezigheid');
     const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});
     bewaarBestand(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),
                   bestandsnaam('xlsx'));
