@@ -39,6 +39,9 @@ button{cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-se
 .wrap{max-width:620px;margin:0 auto;padding:14px;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 .card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:14px;margin-bottom:12px}
 .lesveld{width:100%;padding:12px;border:1px solid var(--rule);border-radius:8px;min-height:48px;margin-bottom:12px}
+.wie{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.wie input,.wie select{width:100%;padding:12px;border:1px solid var(--rule);border-radius:8px;min-height:48px;background:#fff}
+.wie input:placeholder-shown,.wie select.leeg{border-color:#E3A93A;background:#FFFBF2}
 
 ul.lijst{list-style:none;margin:0;padding:0}
 ul.lijst li{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--rule)}
@@ -100,6 +103,10 @@ select{width:100%;padding:11px;border:1px solid var(--rule);border-radius:8px;mi
   </div>
 
   <div class="card">
+    <div class="wie" id="wie">
+      <input id="docent" placeholder="Jouw naam" autocomplete="off">
+      <select id="klas"></select>
+    </div>
     <input class="lesveld" id="les" placeholder="Welke les? (optioneel)" autocomplete="off">
     <ul class="lijst" id="lijst"></ul>
   </div>
@@ -107,6 +114,15 @@ select{width:100%;padding:11px;border:1px solid var(--rule);border-radius:8px;mi
   <div class="card">
     <details id="klasBlok">
       <summary>Klas instellen</summary>
+
+      <h3>Klassen</h3>
+      <div id="klassenLijst"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="nieuweKlas" placeholder="Naam van een nieuwe klas" autocomplete="off"
+               style="flex:1;padding:11px;border:1px solid var(--rule);border-radius:8px;min-height:44px">
+        <button class="mini" id="btnKlasToe" style="margin-top:0;flex:0 0 auto">Toevoegen</button>
+      </div>
+      <p class="note">Importeren en plakken hieronder vullen de klas die bovenaan is gekozen.</p>
 
       <h3>Importeren uit Excel</h3>
       <input type="file" id="bestand" accept=".xlsx,.xls,.xlsm,.csv,.tsv,.txt" style="width:100%">
@@ -154,7 +170,8 @@ select{width:100%;padding:11px;border:1px solid var(--rule);border-radius:8px;mi
 
 <div class="acties">
   <button class="btn ghost" id="btnReset">Wissen</button>
-  <button class="btn" id="btnExport">Exporteer naar Excel</button>
+  <button class="btn ghost" id="btnBewaar">Opslaan</button>
+  <button class="btn" id="btnDelen">Naar Teams</button>
 </div>
 
 <script>
@@ -197,12 +214,35 @@ const bewaar = {
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
 };
 
-let namen = bewaar.get('pres.namen', STANDAARD.split('\n'));
-let rijen = bewaar.get('pres.rijen', null) || namen.map(n=>({naam:n, status:null}));
+let docentNaam = bewaar.get('pres.docent','');
+
+/* Elke klas heeft een eigen namenlijst en eigen statussen, zodat wisselen
+   tussen klassen niets wist. klassen = { naam: [{naam, status}] } */
+let klassen  = bewaar.get('pres.klassen', null);
+let klasNaam = bewaar.get('pres.actief', '');
+
+if(!klassen){
+  // Overzetten vanaf de vorige versie, die maar één lijst kende.
+  const oudeNamen = bewaar.get('pres.namen', STANDAARD.split('\n'));
+  const oudeRijen = bewaar.get('pres.rijen', null) || oudeNamen.map(n=>({naam:n, status:null}));
+  klasNaam = bewaar.get('pres.klas','') || 'Mijn klas';
+  klassen  = {}; klassen[klasNaam] = oudeRijen;
+  bewaar.set('pres.klassen', klassen);
+  bewaar.set('pres.actief', klasNaam);
+}
+if(!klassen[klasNaam]) klasNaam = Object.keys(klassen)[0] || '';
+
+let rijen = klassen[klasNaam] || [];
+let namen = rijen.map(r=>r.naam);
 
 const $ = s => document.querySelector(s);
 const vandaag = () => new Date().toLocaleDateString('nl-NL');
-const opslaan = () => { bewaar.set('pres.rijen', rijen); bewaar.set('pres.namen', namen); };
+const opslaan = () => {
+  if(klasNaam) klassen[klasNaam] = rijen;
+  bewaar.set('pres.klassen', klassen);
+  bewaar.set('pres.actief', klasNaam);
+};
+const schoon = t => String(t||'').trim().replace(/[^\w\s-]/g,'').replace(/\s+/g,'-');
 
 function toast(t){
   const e=document.createElement('div'); e.className='toast'; e.textContent=t;
@@ -227,7 +267,8 @@ function tekenKop(){
   const rest=document.createElement('span');
   rest.style.marginLeft='auto'; rest.textContent=`${gedaan}/${totaal}`;
   counts.appendChild(rest);
-  $('#btnExport').disabled = gedaan===0;
+  $('#btnDelen').disabled = gedaan===0;
+  $('#btnBewaar').disabled = gedaan===0;
 }
 
 function teken(){
@@ -253,18 +294,97 @@ function teken(){
     li.appendChild(box); ul.appendChild(li);
   });
   tekenKop();
+  vulKlasKeuze();
 }
 
 function zetNamen(lijst, bron){
+  if(!klasNaam){ toast('Maak eerst een klas aan onder Klassen.'); return; }
   namen = lijst;
   rijen = namen.map(n=>({naam:n, status:null}));
-  opslaan(); teken();
+  klassen[klasNaam] = rijen;
+  opslaan(); teken(); tekenKlassen();
   $('#namen').value = namen.join('\n');
   $('#klasBlok').open = false;
-  toast(`${namen.length} namen geladen${bron?' uit '+bron:''}.`);
+  toast(`${namen.length} namen in ${klasNaam}${bron?' uit '+bron:''}.`);
 }
 
 /* ---------------- namen plakken ---------------- */
+$('#docent').value = docentNaam;
+$('#docent').addEventListener('input', e=>{ docentNaam=e.target.value; bewaar.set('pres.docent',docentNaam); });
+
+function vulKlasKeuze(){
+  const sel=$('#klas'); sel.innerHTML='';
+  const lijst=Object.keys(klassen).sort();
+  if(!lijst.length){
+    const o=document.createElement('option');
+    o.value=''; o.textContent='nog geen klas';
+    sel.appendChild(o); sel.classList.add('leeg'); return;
+  }
+  sel.classList.remove('leeg');
+  lijst.forEach(k=>{
+    const o=document.createElement('option');
+    o.value=k; o.textContent=`${k} (${klassen[k].length})`;
+    sel.appendChild(o);
+  });
+  sel.value=klasNaam;
+}
+
+$('#klas').addEventListener('change', e=>{
+  opslaan();                       // statussen van de klas die je verlaat bewaren
+  klasNaam=e.target.value;
+  rijen=klassen[klasNaam]||[];
+  namen=rijen.map(r=>r.naam);
+  bewaar.set('pres.actief', klasNaam);
+  $('#namen').value=namen.join('\n');
+  teken(); tekenKlassen();
+});
+
+function tekenKlassen(){
+  const el=$('#klassenLijst');
+  const lijst=Object.keys(klassen).sort();
+  if(!lijst.length){ el.innerHTML='<p class="note" style="margin-top:0">Nog geen klassen. Voeg er hieronder een toe.</p>'; return; }
+  el.innerHTML='';
+  lijst.forEach(k=>{
+    const rij=document.createElement('div');
+    rij.style.cssText='display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule)';
+    const tekst=document.createElement('div'); tekst.style.flex='1';
+    const b=document.createElement('b'); b.textContent=k;
+    if(k===klasNaam){ b.textContent=k+'  \u2190 nu gekozen'; b.style.color='var(--nav)'; }
+    const sm=document.createElement('small');
+    sm.style.cssText='display:block;color:var(--muted);font-size:12px';
+    sm.textContent=`${klassen[k].length} studenten`;
+    tekst.appendChild(b); tekst.appendChild(sm);
+    const del=document.createElement('button');
+    del.className='mini ghost'; del.textContent='Verwijderen';
+    del.style.cssText='margin-top:0;min-height:40px;font-size:13px;color:var(--rood);border-color:var(--rood)';
+    del.addEventListener('click',()=>{
+      if(!confirm(`Klas ${k} verwijderen, inclusief de namen en de statussen?`)) return;
+      delete klassen[k];
+      if(klasNaam===k){
+        klasNaam=Object.keys(klassen)[0]||'';
+        rijen=klassen[klasNaam]||[]; namen=rijen.map(r=>r.naam);
+        $('#namen').value=namen.join('\n');
+      }
+      bewaar.set('pres.klassen',klassen); bewaar.set('pres.actief',klasNaam);
+      teken(); tekenKlassen();
+    });
+    rij.appendChild(tekst); rij.appendChild(del); el.appendChild(rij);
+  });
+}
+
+$('#btnKlasToe').addEventListener('click',()=>{
+  const naam=$('#nieuweKlas').value.trim();
+  if(!naam){ toast('Vul een naam in.'); return; }
+  if(klassen[naam]){ toast('Die klas bestaat al.'); return; }
+  opslaan();
+  klassen[naam]=[]; klasNaam=naam;
+  rijen=klassen[naam]; namen=[];
+  bewaar.set('pres.klassen',klassen); bewaar.set('pres.actief',klasNaam);
+  $('#nieuweKlas').value=''; $('#namen').value='';
+  teken(); tekenKlassen();
+  toast(`${naam} toegevoegd. Zet er nu namen in.`);
+});
+
 $('#namen').value = namen.join('\n');
 $('#btnNamen').addEventListener('click',()=>{
   const nieuw=$('#namen').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
@@ -470,9 +590,15 @@ $('#btnReset').addEventListener('click',()=>{
 /* ---------------- exporteren ---------------- */
 const statusLabel = k => { const s=STATUS.find(x=>x.key===k); return s?s.label:'Niet geregistreerd'; };
 
+/* Klas, docent, datum en tijd in de naam. Twee collega's met dezelfde klas
+   schrijven naar dezelfde Teams-map, dus de naam moet uniek zijn. */
 function bestandsnaam(ext){
-  const les=$('#les').value.trim().replace(/[^\w\s-]/g,'').replace(/\s+/g,'_');
-  return `aanwezigheid_${les?les+'_':''}${new Date().toISOString().slice(0,10)}.${ext}`;
+  const d=new Date();
+  const datum=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const tijd=`${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;
+  const delen=['aanwezigheid', schoon(klasNaam), schoon($('#docent').value),
+               schoon($('#les').value), datum, tijd].filter(Boolean);
+  return delen.join('_')+'.'+ext;
 }
 function bewaarBestand(blob,naam){
   const a=document.createElement('a');
@@ -480,32 +606,75 @@ function bewaarBestand(blob,naam){
   document.body.appendChild(a); a.click();
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },600);
 }
+function nu(){ return new Date().toTimeString().slice(0,5); }
+
 function tabelData(){
   const les=$('#les').value.trim();
-  return [['Datum','Les','Naam','Status'],
-    ...rijen.map(r=>[vandaag(), les, r.naam, statusLabel(r.status)])];
+  const doc=$('#docent').value.trim();
+  const kl = klasNaam;
+  const t=nu();
+  return [['Datum','Tijd','Docent','Klas','Les','Naam','Status'],
+    ...rijen.map(r=>[vandaag(), t, doc, kl, les, r.naam, statusLabel(r.status)])];
 }
 function csvBlob(){
   const q=v=>`"${String(v).replace(/"/g,'""')}"`;
   return new Blob(['\uFEFF'+tabelData().map(r=>r.map(q).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8'});
 }
 
-$('#btnExport').addEventListener('click',()=>{
+function maakBestand(){
+  const naam=bestandsnaam('xlsx');
   try{
     if(!window.XLSX) throw new Error('geen XLSX');
     const data=tabelData();
     const ws=XLSX.utils.aoa_to_sheet(data);
-    ws['!cols']=[{wch:12},{wch:24},{wch:26},{wch:18}];
-    ws['!autofilter']={ref:'A1:D'+data.length};
+    ws['!cols']=[{wch:11},{wch:7},{wch:20},{wch:12},{wch:24},{wch:26},{wch:18}];
+    ws['!autofilter']={ref:'A1:G'+data.length};
     const wb=XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Aanwezigheid');
     const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-    bewaarBestand(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),
-                  bestandsnaam('xlsx'));
-    toast('Excelbestand opgeslagen.');
+    return { naam, blob:new Blob([buf],
+      {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}) };
   }catch(e){
-    bewaarBestand(csvBlob(), bestandsnaam('csv'));
-    toast('Opgeslagen als CSV. Opent ook in Excel.');
+    return { naam: bestandsnaam('csv'), blob: csvBlob() };
+  }
+}
+
+/* Vraagt om naam en klas voordat er geëxporteerd wordt. Zonder die twee is in de
+   gedeelde Teams-map niet te zien van wie het bestand komt. */
+function compleet(){
+  const mist=[];
+  if(!$('#docent').value.trim()) mist.push('je naam');
+  if(!klasNaam)                  mist.push('een klas');
+  if(mist.length){
+    toast('Vul eerst '+mist.join(' en ')+' in bovenaan.');
+    (mist[0]==='je naam' ? $('#docent') : $('#klas')).focus();
+    return false;
+  }
+  return true;
+}
+
+$('#btnBewaar').addEventListener('click',()=>{
+  if(!compleet()) return;
+  const {naam,blob}=maakBestand();
+  bewaarBestand(blob,naam);
+  toast('Opgeslagen bij je downloads.');
+});
+
+$('#btnDelen').addEventListener('click', async ()=>{
+  if(!compleet()) return;
+  const {naam,blob}=maakBestand();
+  const file=new File([blob], naam, {type:blob.type});
+  try{
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:naam});
+      return;
+    }
+    bewaarBestand(blob,naam);
+    toast('Delen kan niet op dit toestel. Bestand staat bij je downloads.');
+  }catch(e){
+    if(e && e.name==='AbortError') return;
+    bewaarBestand(blob,naam);
+    toast('Delen mislukt. Bestand staat bij je downloads.');
   }
 });
 
@@ -524,6 +693,8 @@ $('#btnInstall').addEventListener('click', async ()=>{
 });
 window.addEventListener('appinstalled',()=>{ $('#installBalk').style.display='none'; });
 
+vulKlasKeuze();
+tekenKlassen();
 teken();
 </script>
 </body>
